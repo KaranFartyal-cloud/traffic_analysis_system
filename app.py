@@ -16,7 +16,7 @@ Select a module from the sidebar.
 ### Available Modules
 
 - 🚗 Traffic Analysis
-- 🕳️ Pothole Detection
+- 🕳️ helmet Detection
 - 📊 Reports
 - 🤖 ML Prediction
 """)

@@ -8,6 +8,8 @@ __pycache__/
 # C extensions
 *.so
 
+
+
 # ===========================================
 # Virtual Environment
 # ===========================================
@@ -76,7 +78,7 @@ Thumbs.db
 # ===========================================
 runs/
 weights/
-*.pt
+
 *.onnx
 *.engine
 *.torchscript
@@ -103,6 +105,10 @@ output/
 outputs/
 results/
 predictions/
+
+tests/
+
+YOLO_Helmet_Detection_Sample_Images/
 
 # Images generated during testing
 *.png
