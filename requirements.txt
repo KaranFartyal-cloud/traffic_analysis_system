@@ -4,3 +4,5 @@ ultralytics
 cvzone
 numpy
 pandas
+yt-dlp
+opencv
