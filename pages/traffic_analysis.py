@@ -3,15 +3,15 @@ import cv2
 import time
 import pandas as pd
 from youtube.downloader import YouTubeDownloader
+from pathlib import Path
+import os
 from detection.detector import VehicleDetector
 
 # -----------------------------
 # Page Config
 # -----------------------------
 st.set_page_config(
-    page_title="AI Traffic Analysis System",
-    page_icon="🚦",
-    layout="wide"
+    page_title="AI Traffic Analysis System", page_icon="🚦", layout="wide"
 )
 
 # -----------------------------
@@ -28,21 +28,33 @@ st.markdown(
 # -----------------------------
 st.sidebar.title("Settings")
 
-confidence = st.sidebar.slider(
-    "Confidence Threshold",
-    0.10,
-    1.00,
-    0.40
-)
+confidence = st.sidebar.slider("Confidence Threshold", 0.10, 1.00, 0.40)
 
 start = st.sidebar.button("▶ Start Analysis")
 
 # -----------------------------
 # URL
 # -----------------------------
-youtube_url = st.text_input(
-    "Enter YouTube URL"
-)
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+video_folder = BASE_DIR / "assets" / "traffic"
+
+if not video_folder.exists():
+    st.error(f"Video folder not found:\n{video_folder}")
+    st.stop()
+
+videos = [
+    f.name
+    for f in video_folder.iterdir()
+    if f.suffix.lower() in (".mp4", ".avi", ".mov", ".mkv")
+]
+
+if not videos:
+    st.error("No videos found in assets/videos")
+    st.stop()
+
+selected_video = st.selectbox("Select Video", videos)
 
 # -----------------------------
 # Layout
@@ -76,25 +88,10 @@ with right:
 # -----------------------------
 if start:
 
-    if youtube_url == "":
-        st.error("Please enter a YouTube URL")
+    video_path = str(video_folder / selected_video)
 
-        st.stop()
+    st.success(f"Selected Video: {selected_video}")
 
-    # -------------------------
-    # Download stream
-    # -------------------------
-    downloader = YouTubeDownloader()
-
-    video = downloader.get_stream_url(youtube_url)
-
-    print(youtube_url)
-
-    st.success(video["title"])
-
-    # -------------------------
-    # Detector
-    # -------------------------
     detector = VehicleDetector()
 
     # -------------------------
@@ -108,15 +105,11 @@ if start:
 
     current_minute = 0
 
-    for frame, detections in detector.process_video(video["stream_url"]):
+    for frame, detections in detector.process_video(video_path):
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        video_placeholder.image(
-            frame,
-            channels="RGB",
-            use_container_width=True
-        )
+        video_placeholder.image(frame, channels="RGB", use_container_width=True)
 
         # -------------------------
         # Count Vehicles
@@ -147,22 +140,22 @@ if start:
         minute = int(elapsed // 60)
 
         if minute > current_minute:
-            minute_data.append({
-                "Minute": current_minute,
-                "Cars": cars,
-                "Motorcycles": bikes,
-                "Buses": buses,
-                "Trucks": trucks,
-                "Total": total
-            })
+            minute_data.append(
+                {
+                    "Minute": current_minute,
+                    "Cars": cars,
+                    "Motorcycles": bikes,
+                    "Buses": buses,
+                    "Trucks": trucks,
+                    "Total": total,
+                }
+            )
 
             current_minute = minute
 
             df = pd.DataFrame(minute_data)
 
-            graph_placeholder.line_chart(
-                df.set_index("Minute")
-            )
+            graph_placeholder.line_chart(df.set_index("Minute"))
 
         # -------------------------
         # Density
@@ -190,4 +183,3 @@ if start:
         total_metric.metric("Total Vehicles", total)
 
         density_metric.metric("Traffic Density", density)
-
