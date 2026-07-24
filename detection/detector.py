@@ -15,7 +15,7 @@ class VehicleDetector:
 
         from ultralytics import YOLO
 
-        self.model = YOLO("yolov8l.pt")
+        self.model = YOLO("yolov8n.pt")
 
         # Vehicle classes (COCO IDs)
         self.vehicle_classes = {2: "Car", 3: "Motorcycle", 5: "Bus", 7: "Truck"}
